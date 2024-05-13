@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "mini-market"
+version = "0.1.0"
+description = ""
+authors = ["Рабадан Ибрагимов <raba@mail.ru>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+django = "^5.0.6"
+djangorestframework = "^3.15.1"
+celery = "^5.4.0"
+psycopg = "^3.1.18"
+redis = "^5.0.4"
+djoser = "^2.2.2"
+drf-spectacular = "^0.27.2"
+python-dotenv = "^1.0.1"
+gunicorn = "^22.0.0"
+psycopg2-binary = "^2.9.9"
+coverage = "^7.5.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
