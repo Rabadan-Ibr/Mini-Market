@@ -9,7 +9,7 @@ services:
       - "443:443"
     volumes:
       - static_value:/var/html/static/
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./certbot/conf/:/etc/nginx/ssl/:ro
       - ./certbot/www:/var/www/certbot/:ro
     depends_on:
@@ -19,7 +19,7 @@ services:
     container_name: market_backend
     restart: always
     image: rbdn/mini_market:latest
-    env_file: devops.env
+    env_file: docker.env
     command: >
       sh -c "poetry run python manage.py collectstatic --noinput &&
              poetry run gunicorn mini_market.wsgi:application --bind 0:8000"
@@ -27,12 +27,12 @@ services:
       - static_value:/apps/market/static/
     depends_on:
       - postgres_db
-      - redis
+      - redis_db
 
   postgres_db:
     container_name: market_postgres
     image: postgres:14.0-alpine
-    env_file: devops.env
+    env_file: docker.env
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     restart: always
@@ -48,7 +48,7 @@ services:
     container_name: market_celery
     restart: always
     image: rbdn/mini_market:latest
-    env_file: devops.env
+    env_file: docker.env
     command: poetry run celery -A mini_market worker -B -l INFO
     depends_on:
       - backend
