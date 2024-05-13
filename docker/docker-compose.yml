@@ -1,0 +1,67 @@
+version: "3.9"
+
+services:
+  nginx:
+    container_name: market_nginx
+    image: nginx:1.23.3-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - static_value:/var/html/static/
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./certbot/conf/:/etc/nginx/ssl/:ro
+      - ./certbot/www:/var/www/certbot/:ro
+    depends_on:
+      - backend
+
+  backend:
+    container_name: market_backend
+    restart: always
+    image: rbdn/mini_market:latest
+    env_file: devops.env
+    command: >
+      sh -c "poetry run python manage.py collectstatic --noinput &&
+             poetry run gunicorn mini_market.wsgi:application --bind 0:8000"
+    volumes:
+      - static_value:/apps/market/static/
+    depends_on:
+      - postgres_db
+      - redis
+
+  postgres_db:
+    container_name: market_postgres
+    image: postgres:14.0-alpine
+    env_file: devops.env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    restart: always
+
+  redis_db:
+    container_name: market_redis
+    image: redis:6.2-alpine
+    restart: always
+    volumes:
+      - redis_data:/data
+
+  celery:
+    container_name: market_celery
+    restart: always
+    image: rbdn/mini_market:latest
+    env_file: devops.env
+    command: poetry run celery -A mini_market worker -B -l INFO
+    depends_on:
+      - backend
+      - redis_db
+
+  certbot:
+    container_name: market_certbot
+    image: certbot/certbot:latest
+    volumes:
+      - ./certbot/conf/:/etc/letsencrypt/:rw
+      - ./certbot/www/:/var/www/certbot/:rw
+
+volumes:
+  postgres_data:
+  redis_data:
+  static_value:

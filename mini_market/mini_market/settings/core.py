@@ -1,14 +1,24 @@
+import os
 from pathlib import Path
 
+from dotenv import load_dotenv
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-SECRET_KEY = 'django-insecure-0(hko*q24=i#tw$%(inh@4ab*$q!a#svke#5z_#&*8ba+r6z7+'
+dotenv_file = BASE_DIR.joinpath('.env')
 
+if dotenv_file.is_file():
+    load_dotenv(dotenv_file)
 
-DEBUG = True
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
-ALLOWED_HOSTS = []
+DEBUG = True if os.environ.get('DEBUG', 'False') == 'True' else False
+
+ON_DEV = False if os.getenv('ON_DEV', 'True') == 'False' else True
+
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split()
+
+CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS').split()
 
 
 # Application definition
@@ -92,6 +102,37 @@ USE_TZ = True
 
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'static'
 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+REDIS_HOST = os.environ.get('REDIS_HOST', 'localhost')
+
+PAYMENT_URL = os.environ.get('PAYMENT_URL', 'empty')
+PAYMENT_TOKEN = os.environ.get('PAYMENT_TOKEN', 'empty')
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'file': {
+            'format': '%(asctime)s %(name)-12s %(levelname)-8s %(message)s'
+        }
+    },
+    'handlers': {
+        'file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'formatter': 'file',
+            'filename': 'error_logs.log',
+        }
+    },
+    'loggers': {
+        '': {
+            'level': 'ERROR',
+            'handlers': ['file']
+        }
+    }
+}
